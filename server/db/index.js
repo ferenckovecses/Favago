@@ -1,5 +1,6 @@
 const mysql = require('mysql');
 
+
 const conn = mysql.createPool({
     connectionLimit: 10,
     password: '',
@@ -11,7 +12,7 @@ const conn = mysql.createPool({
 
 let database = {};
 
-database.all = () =>
+database.getAllUser = () =>
 {
     return new Promise((resolve, reject) => {
 
@@ -20,7 +21,24 @@ database.all = () =>
             {
                 return reject(err);
             }
+            //console.log(results[0].users)
             return resolve(results);
+        });
+
+    });
+};
+
+database.getSpecificUser = (id) =>
+{
+    return new Promise((resolve, reject) => {
+
+        conn.query(`SELECT * FROM user WHERE id = ?`, [id],(err, results) => {
+            if(err)
+            {
+                return reject(err);
+            }
+            //console.log(results[0].users)
+            return resolve(results[0]);
         });
 
     });

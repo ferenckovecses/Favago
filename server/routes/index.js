@@ -6,7 +6,20 @@ const router = express.Router();
 router.get('/', async (req,res, next) => {
 
     try{
-        let results = await db.all();
+        let results = await db.getAllUser();
+        res.json(results);
+    } catch(e)
+    {
+        console.log(e);
+        res.sendStatus(500);
+    }
+
+});
+
+router.get('/:id', async (req,res, next) => {
+
+    try{
+        let results = await db.getSpecificUser(req.params.id);
         res.json(results);
     } catch(e)
     {
