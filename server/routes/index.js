@@ -1,9 +1,12 @@
 const express = require('express');
 const db = require('../db/database');
-const controller = require('../controller')
+const controller = require('../db/data_insertion');
+const { json } = require('express/lib/response');
 
 const router = express.Router();
 
+
+//Database init page
 router.get('/init/', async (req,res, next) => {
 
     //Create the database
@@ -25,10 +28,65 @@ router.get('/init/', async (req,res, next) => {
         res.sendStatus(500);
         return;
     }
+
+    try{
+        await controller.AddSecondGuest()
+    } catch(e)
+    {
+        console.log(e);
+        res.sendStatus(500);
+        return;
+    }
+
+    try{
+        await controller.AddHotel()
+    } catch(e)
+    {
+        console.log(e);
+        res.sendStatus(500);
+        return;
+    }
+
+    try{
+        await controller.AddSecondHotel()
+    } catch(e)
+    {
+        console.log(e);
+        res.sendStatus(500);
+        return;
+    }
+
+    try{
+        await controller.AddRoom()
+    } catch(e)
+    {
+        console.log(e);
+        res.sendStatus(500);
+        return;
+    }
+
+    try{
+        await controller.AddSecondRoom()
+    } catch(e)
+    {
+        console.log(e);
+        res.sendStatus(500);
+        return;
+    }
+
+    try{
+        await controller.AddThirdRoom()
+    } catch(e)
+    {
+        console.log(e);
+        res.sendStatus(500);
+        return;
+    }
     
     res.sendStatus(200);
 });
 
+//Guest pages
 router.get('/guest/', async (req,res, next) => {
 
     try{
@@ -58,6 +116,117 @@ router.get('/guest/:id', async (req,res, next) => {
 router.post("/guest/", async (req, res, next) => {
 	try {
         let results = await db.CreateGuest(req);
+        res.json(results);
+	} catch (error) {
+        console.log(error);
+		return res.status(500).send(error);
+	}
+});
+
+//Hotel pages
+router.get('/hotel/', async (req,res, next) => {
+
+    try{
+        let results = await db.GetAllHotels();
+        res.json(results);
+    } catch(e)
+    {
+        console.log(e);
+        res.sendStatus(500);
+    }
+
+});
+
+router.get('/hotel/:id', async (req,res, next) => {
+
+    try{
+        let results = await db.GetHotel(req.params.id);
+        res.json(results);
+    } catch(e)
+    {
+        console.log(e);
+        res.sendStatus(500);
+    }
+
+});
+
+router.post("/hotel/", async (req, res, next) => {
+	try {
+        let results = await db.CreateHotel(req);
+        res.json(results);
+	} catch (error) {
+        console.log(error);
+		return res.status(500).send(error);
+	}
+});
+
+//Room pages
+router.get('/room/', async (req,res, next) => {
+
+    try{
+        let results = await db.GetAllRooms();
+        res.json(results);
+    } catch(e)
+    {
+        console.log(e);
+        res.sendStatus(500);
+    }
+
+});
+
+router.get('/room/:id', async (req,res, next) => {
+
+    try{
+        let results = await db.GetRoom(req.params.id);
+        res.json(results);
+    } catch(e)
+    {
+        console.log(e);
+        res.sendStatus(500);
+    }
+
+});
+
+router.post("/room/", async (req, res, next) => {
+	try {
+        let results = await db.CreateRoom(req);
+        res.json(results);
+	} catch (error) {
+        console.log(error);
+		return res.status(500).send(error);
+	}
+});
+
+//Reservation pages
+router.get('/reservation/', async (req,res, next) => {
+
+    try{
+        let results = await db.GetAllReservations();
+        res.json(results);
+    } catch(e)
+    {
+        console.log(e);
+        res.sendStatus(500);
+    }
+
+});
+
+router.get('/reservation/:id', async (req,res, next) => {
+
+    try{
+        let results = await db.GetReservationWithID(req.params.id);
+        res.json(results);
+    } catch(e)
+    {
+        console.log(e);
+        res.sendStatus(500);
+    }
+
+});
+
+router.post("/reservation/", async (req, res, next) => {
+	try {
+        let results = await db.CreateReservation(req);
         res.json(results);
 	} catch (error) {
         console.log(error);

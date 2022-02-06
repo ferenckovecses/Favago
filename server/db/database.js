@@ -60,7 +60,6 @@ database.Init = () =>
             {
                 return reject(err);
             }
-            console.log("Hotel table created!");
         });
 
         //Create guest table
@@ -76,7 +75,6 @@ database.Init = () =>
             {
                 return reject(err);
             }
-            console.log("User table created!");
         });
 
         //Create room table
@@ -84,6 +82,7 @@ database.Init = () =>
             id INT NOT NULL AUTO_INCREMENT ,  
             name VARCHAR(100) NOT NULL ,  
             price INT NOT NULL ,
+            roomNumber INT NOT NULL,
             description TEXT,  
             hotelID INT NOT NULL ,    
             PRIMARY KEY  (id),
@@ -92,7 +91,6 @@ database.Init = () =>
             {
                 return reject(err);
             }
-            console.log("Room table created!");
         });
 
         //Create reservation table
@@ -109,17 +107,13 @@ database.Init = () =>
             {
                 return reject(err);
             }
-            console.log("Reservation table created!");
+            console.log("Tables has been created");
             return resolve(results);
         });
     });
 };
 
-//Hotel related methods
-//Room related methods
-//Reservation related methods
-
-//User related methods
+//Guest related methods
 database.GetAllGuests = () =>
 {
     return new Promise((resolve, reject) => {
@@ -152,7 +146,7 @@ database.GetGuest = ( id) =>
 
 database.CreateGuest = (req) =>
 {
-    return new Promise(async (resolve, reject) => {
+    return new Promise( (resolve, reject) => {
         //Check if user already exists
         conn.query('SELECT COUNT(*) as users FROM guest WHERE guest.email = ?', [req.body.email], (err, results) => {
             if(err)
@@ -163,17 +157,190 @@ database.CreateGuest = (req) =>
             {
                 return reject("Error: User already exists!");
             }
+            else
+            {
+                console.log("Insert user");
+                bcrypt.hash(req.body.password, 10, (err,hash) => {
+                    if(err)
+                    {
+                        return reject(err);
+                    }
+                    conn.query(`INSERT INTO guest(firstName, lastName, email, password ) VALUES(?, ?, ?, ?)`, [req.body.firstName, req.body.lastName, req.body.email, hash], (err, results) => {
+                        if(err)
+                        {
+                            return reject(err);
+                        }
+                        return resolve(results);
+                    });
+                });
+                
+                
+            }
         });
+        
+    });
+};
 
-        //Store user in database
-        let hashed = await bcrypt.hash(req.body.password, 10);
-        conn.query(`INSERT INTO guest(firstName, lastName, email, password ) VALUES(?, ?, ?, ?)`, [req.body.firstName, req.body.lastName, req.body.email, hashed], (err, results) => {
+//Hotel related methods
+database.GetAllHotels = () =>
+{
+    return new Promise((resolve, reject) => {
+
+        conn.query(`SELECT * FROM hotel`, (err, results) => {
             if(err)
             {
                 return reject(err);
             }
             return resolve(results);
         });
+
+    });
+};
+
+database.GetHotel = ( id) =>
+{
+    return new Promise((resolve, reject) => {
+        conn.query(`SELECT * FROM hotel WHERE id = ?`, [ id],(err, results) => {
+            if(err)
+            {
+                return reject(err);
+            }
+            //console.log(results[0].users)
+            return resolve(results[0]);
+        });
+
+    });
+};
+
+database.CreateHotel = (req) =>
+{
+    return new Promise(async (resolve, reject) => {
+        //Check if hotel already exists
+        conn.query('SELECT COUNT(*) as hotels FROM hotel WHERE hotel.name = ? AND hotel.city = ?', [req.body.name, req.body.city], (err, results) => {
+            if(err)
+            {
+                return reject(err);
+            }
+            if(results[0].hotels > 0)
+            {
+                return reject("Error: Hotel already exists!");
+            }
+            else
+            {
+                //Store hotel in database
+                conn.query(`INSERT INTO hotel(name, city ) VALUES(?, ?)`, [req.body.name, req.body.city], (err, results) => {
+                    if(err)
+                    {
+                        return reject(err);
+                    }
+                    return resolve(results);
+                });
+            }
+        });
+
+        
+        
+        
+    });
+};
+//Room related methods
+database.GetAllRooms = () =>
+{
+    return new Promise((resolve, reject) => {
+
+        conn.query(`SELECT * FROM room`, (err, results) => {
+            if(err)
+            {
+                return reject(err);
+            }
+            return resolve(results);
+        });
+
+    });
+};
+
+database.GetRoom = ( id) =>
+{
+    return new Promise((resolve, reject) => {
+        conn.query(`SELECT * FROM room WHERE id = ?`, [ id],(err, results) => {
+            if(err)
+            {
+                return reject(err);
+            }
+            //console.log(results[0].users)
+            return resolve(results[0]);
+        });
+
+    });
+};
+
+database.CreateRoom = (req) =>
+{
+    return new Promise(async (resolve, reject) => {
+        //Check if room already exists
+        conn.query('SELECT COUNT(*) as rooms FROM room WHERE room.hotelID = ? AND room.roomNumber = ?', [ req.body.hotelID, req.body.roomNumber], (err, results) => {
+            if(err)
+            {
+                return reject(err);
+            }
+            if(results[0].rooms > 0)
+            {
+                return reject("Error: Room already exists!");
+            }
+            else
+            {
+                //Store room in database
+                conn.query(`INSERT INTO room(name, hotelID, roomNumber, price, description) VALUES(?, ?, ?, ?, ?)`, [req.body.name, req.body.hotelID, req.body.roomNumber, req.body.price, req.body.description], (err, results) => {
+                    if(err)
+                    {
+                        return reject(err);
+                    }
+                    return resolve(results);
+                });
+            }
+        });
+
+        
+        
+        
+    });
+};
+//Reservation related methods
+database.GetAllReservations = () =>
+{
+    return new Promise((resolve, reject) => {
+
+        conn.query(`SELECT * FROM reservation`, (err, results) => {
+            if(err)
+            {
+                return reject(err);
+            }
+            return resolve(results);
+        });
+
+    });
+};
+
+database.GetReservationWithID = ( id) =>
+{
+    return new Promise((resolve, reject) => {
+        conn.query(`SELECT * FROM reservation WHERE id = ?`, [ id],(err, results) => {
+            if(err)
+            {
+                return reject(err);
+            }
+            //console.log(results[0].users)
+            return resolve(results[0]);
+        });
+
+    });
+};
+
+database.CreateReservation = (req) =>
+{
+    return new Promise(async (resolve, reject) => {
+
+        
     });
 };
 
