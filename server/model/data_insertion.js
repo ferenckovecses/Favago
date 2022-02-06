@@ -125,7 +125,7 @@ controller.AddSecondRoom = () => {
             apiPath+roomPath,
             {
             json: {
-                name: 'Faszálító nászutas lakosztály',
+                name: 'Faszállító nászutas lakosztály',
                 hotelID: '1',
                 roomNumber: '69',
                 price: '400000',
@@ -152,6 +152,28 @@ controller.AddThirdRoom = () => {
                 hotelID: '2',
                 roomNumber: '88',
                 price: '20000000',
+                },
+            },
+            (err, res, body) => {
+            if (err) {
+                return reject(err)
+            }
+            return resolve(res)
+            }
+        )
+    });
+}
+
+controller.AddReservation = () => {
+    return new Promise((resolve, reject) => {
+        request.post(
+            apiPath+reservationPath,
+            {
+            json: {
+                roomID: '2',
+                userID: '2',
+                startDate: '2022-03-09',
+                endDate: '2022-04-14',
                 },
             },
             (err, res, body) => {

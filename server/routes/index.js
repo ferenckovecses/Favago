@@ -1,6 +1,6 @@
 const express = require('express');
-const db = require('../db/database');
-const controller = require('../db/data_insertion');
+const db = require('../model/database');
+const controller = require('../model/data_insertion');
 const { json } = require('express/lib/response');
 
 const router = express.Router();
@@ -76,6 +76,15 @@ router.get('/init/', async (req,res, next) => {
 
     try{
         await controller.AddThirdRoom()
+    } catch(e)
+    {
+        console.log(e);
+        res.sendStatus(500);
+        return;
+    }
+
+    try{
+        await controller.AddReservation()
     } catch(e)
     {
         console.log(e);
@@ -215,6 +224,32 @@ router.get('/reservation/:id', async (req,res, next) => {
 
     try{
         let results = await db.GetReservationWithID(req.params.id);
+        res.json(results);
+    } catch(e)
+    {
+        console.log(e);
+        res.sendStatus(500);
+    }
+
+});
+
+router.get('/reservation/guest/:id', async (req,res, next) => {
+
+    try{
+        let results = await db.GetReservationWithGuest(req.params.id);
+        res.json(results);
+    } catch(e)
+    {
+        console.log(e);
+        res.sendStatus(500);
+    }
+
+});
+
+router.delete('/reservation/guest/:id', async (req,res, next) => {
+
+    try{
+        let results = await db.RemoveReservation(req.params.id);
         res.json(results);
     } catch(e)
     {

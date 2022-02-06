@@ -96,12 +96,13 @@ database.Init = () =>
         //Create reservation table
         conn.query(`CREATE TABLE IF NOT EXISTS reservation ( 
             id INT NOT NULL AUTO_INCREMENT ,  
-            hotelID INT NOT NULL ,  
+            roomID INT NOT NULL ,  
             userID INT NOT NULL ,  
             startDate DATE NOT NULL ,
-            endDate DATE NOT NULL ,    
+            endDate DATE NOT NULL ,
+            cost INT NOT NULL,    
             PRIMARY KEY  (id),
-            FOREIGN KEY (hotelID) REFERENCES ??.hotel(id),
+            FOREIGN KEY (roomID) REFERENCES ??.room(id),
             FOREIGN KEY (userID) REFERENCES ??.guest(id))`, [db,db], (err, results) => {
             if(err)
             {
@@ -138,7 +139,7 @@ database.GetGuest = ( id) =>
                 return reject(err);
             }
             //console.log(results[0].users)
-            return resolve(results[0]);
+            return resolve(results);
         });
 
     });
@@ -206,7 +207,7 @@ database.GetHotel = ( id) =>
                 return reject(err);
             }
             //console.log(results[0].users)
-            return resolve(results[0]);
+            return resolve(results);
         });
 
     });
@@ -268,7 +269,7 @@ database.GetRoom = ( id) =>
                 return reject(err);
             }
             //console.log(results[0].users)
-            return resolve(results[0]);
+            return resolve(results);
         });
 
     });
@@ -330,7 +331,29 @@ database.GetReservationWithID = ( id) =>
                 return reject(err);
             }
             //console.log(results[0].users)
-            return resolve(results[0]);
+            return resolve(results);
+        });
+
+    });
+};
+
+database.GetReservationWithGuest = (id) =>
+{
+    return new Promise((resolve, reject) => {
+        conn.query(`SELECT hotel.name AS 'Hotel', room.name AS 'Room', 
+                    reservation.startDate AS 'First day', reservation.endDate AS 'Last day', 
+                    reservation.cost AS 'Cost'
+                    FROM reservation
+                    INNER JOIN room ON reservation.roomID = room.id
+                    INNER JOIN hotel ON hotel.id = room.hotelID
+                    WHERE reservation.userID = ?
+                    ORDER BY reservation.endDate DESC`, [id],(err, results) => {
+            if(err)
+            {
+                return reject(err);
+            }
+            //console.log(results[0].users)
+            return resolve(results);
         });
 
     });
@@ -340,9 +363,61 @@ database.CreateReservation = (req) =>
 {
     return new Promise(async (resolve, reject) => {
 
+        var date1 = new Date(req.body.startDate);
+        var date2 = new Date(req.body.endDate);
+        var diffDays = parseInt((date2 - date1) / (1000 * 60 * 60 * 24));
+
+        if(diffDays < 0)
+        {
+            return reject("Invalid dates!");
+        }
+
+        conn.query(`SELECT Count(*) as conflicts FROM reservation WHERE roomID = ? AND reservation.startDate <= ? AND reservation.endDate >= ?`, [ req.body.roomID, req.body.endDate, req.body.startDate],(err, results) => {
+            if(err)
+            {
+                return reject(err);
+            }
+            console.log("Conflicts: ", results[0].conflicts);
+            if(results[0].conflicts > 0)
+            {
+                return reject("The room is taken in the given time period!");
+            }
+            else
+            {
+                conn.query(`SELECT price FROM room WHERE id = ?`, [ req.body.roomID],(err, results) => {
+                    if(err)
+                    {
+                        return reject(err);
+                    }
+                    var cost = results[0].price * diffDays;
+                    console.log("The cost of the room is: ", cost);
+
+                    conn.query(`INSERT INTO reservation(roomID, userID, cost, startDate, endDate) VALUES (?,?,?,?,?)`, [ req.body.roomID,req.body.userID,cost,req.body.startDate,req.body.endDate],(err, results) => {
+                        if(err)
+                        {
+                            return reject(err);
+                        }
+                        return resolve(results);
+                    });
+                });
+            }
+            
+        }); 
         
     });
 };
+
+database.RemoveReservation = (id) => {
+    return new Promise(async (resolve, reject) => {
+        conn.query(`DELETE FROM reservation WHERE id = ?`, [id],(err, results) => {
+            if(err)
+            {
+                return reject(err);
+            }
+            return resolve(results);
+        });
+    });
+}
 
 
 module.exports = database;
