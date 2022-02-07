@@ -639,25 +639,28 @@ router.get('/reservation/:id', async (req,res, next) => {
 
 /**
  * @swagger
- * /api/reservation:
- *   post:
- *     summary: Creates a new reservation
+ * /api/reservation/guest/{id}:
+ *   get:
+ *     summary: Returns a specific user's reservation history.
  *     tags: [Reservation]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/Reservation'
+ *     parameters:
+ *      - in: path
+ *        name: id
+ *        schema:
+ *          type: integer
+ *        required: true
+ *        description: The user's ID
  *     responses:
  *       200:
- *         description: The reservation was successfully created
+ *         description: The reservation history of the user is succesfully retrieved.
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Reservation'
- *       500:
- *         description: Some server error
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Reservation'
+ *         500:
+ *          description: Some server error
  */
 router.get('/reservation/guest/:id', async (req,res, next) => {
 
@@ -705,6 +708,28 @@ router.delete('/reservation/guest/:id', async (req,res, next) => {
 
 });
 
+/**
+ * @swagger
+ * /api/reservation:
+ *   post:
+ *     summary: Creates a new reservation
+ *     tags: [Reservation]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Reservation'
+ *     responses:
+ *       200:
+ *         description: The reservation was successfully created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Reservation'
+ *       500:
+ *         description: Some server error
+ */
 router.post("/reservation/", async (req, res, next) => {
 	try {
         let results = await db.CreateReservation(req);
